@@ -61,7 +61,7 @@ compile(Cwd, ConfigFile, Conf) ->
 'compile-app'(Cwd, ConfigFile, Conf) ->
     %% check sub_dirs if they have something to be compiled
     Dirs = [mad_utils:sub_dirs(Cwd, ConfigFile, Conf)] ++ [Cwd],
-    mad_compile:foreach(fun mad_compile:app/2, Dirs, ConfigFile).
+    mad_compile:foreach(fun mad_compile:app/2, Dirs, Conf, ConfigFile).
 
 'compile-deps'(Cwd, ConfigFile, Conf) ->
     mad_compile:deps(Cwd, Conf, ConfigFile, get_value(deps, Conf, [])).
