@@ -52,10 +52,10 @@ dep(Cwd, _Conf, ConfigFile, Name) ->
     foreach(fun app/3, SubDirs, Conf, ConfigFile),
 
     SrcDir = mad_utils:src(DepPath),
-    Files = sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
+    Files = yrl_files(SrcDir) ++ sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
+
     case Files of
-        [] ->
-            ok;
+        [] -> ok;
         Files ->
             IncDir = mad_utils:include(DepPath),
             EbinDir = mad_utils:ebin(DepPath),
@@ -66,6 +66,10 @@ dep(Cwd, _Conf, ConfigFile, Name) ->
 
             Opts = mad_utils:get_value(erl_opts, Conf1, []),
             lists:foreach(compile_fun(IncDir, EbinDir, Opts), Files),
+
+            %% compile erlydtl templates
+            dtl(DepPath, Conf1),
+
             put(Name, compiled),
             ok
     end.
@@ -76,9 +80,9 @@ app(Dir, Conf, ConfigFile) ->
     Conf1 = mad_utils:script(ConfigFile1, Conf),
     SrcDir = mad_utils:src(Dir),
     Files = sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
+
     case Files of
-        [] ->
-            ok;
+        [] -> ok;
         Files ->
             IncDir = mad_utils:include(Dir),
             EbinDir = mad_utils:ebin(Dir),
@@ -91,10 +95,16 @@ app(Dir, Conf, ConfigFile) ->
             lists:foreach(compile_fun(IncDir, EbinDir, Opts), Files),
             ok
     end,
-    ErlyDtlOpts = mad_utils:get_value(erlydtl_opts, Conf1, []),
-    ErlyDtlOpts1 = validate_erlydtl_opts(Dir, ErlyDtlOpts),
-    compile_erlydtl_files(ErlyDtlOpts1),
+    dtl(Dir,Conf1),
     ok.
+
+dtl(Dir, Config) ->
+    case mad_utils:get_value(erlydtl_opts, Config, []) of
+        [] -> skip;
+        X ->
+            io:format("Dir: ~p DTL: ~p~n", [Dir, X]),
+            compile_erlydtl_files(validate_erlydtl_opts(Dir, X))
+    end.
 
 -spec validate_property({atom(), term()}, term()) -> {atom(), term()}.
 validate_property({modules, _}, Modules) ->
@@ -104,39 +114,49 @@ validate_property(Else, _) ->
 
 -spec compile_fun(directory(), directory(), [compile:option()]) ->
                          fun((file:name()) -> ok).
-compile_fun(IncDir, EbinDir, Opts) ->
+compile_fun(Inc, Bin, Opt) ->
     fun(File) ->
-            case is_app_src(File) of
-                false ->
-                    BeamFile = erl_to_beam(EbinDir, File),
-                    Compiled = is_compiled(BeamFile, File),
-                    if Compiled =:= false ->
-                            io:format("Compiling ~s~n", [File]),
-                            Opts1 = ?COMPILE_OPTS(IncDir, EbinDir, Opts),
-                            compile:file(File, Opts1);
-                       true ->
-                            ok
-                    end;
-                true ->
-                    %% add {modules, [Modules]} to .app file
-                    AppFile = filename:join(EbinDir, app_src_to_app(File)),
-                    io:format("Writing ~s~n", [AppFile]),
-                    BeamFiles = filelib:wildcard("*.beam", EbinDir),
-                    Modules = [list_to_atom(filename:basename(X, ".beam"))
-                               || X <- BeamFiles],
-                    [Struct|_] = mad_utils:consult(File),
-                    {application, AppName, Props} = Struct,
-                    Props1 = add_modules_property(Props),
-                    Props2 = [validate_property(X, Modules) || X <- Props1],
-                    Struct1 = {application, AppName, Props2},
-                    file:write_file(AppFile, io_lib:format("~p.~n", [Struct1]))
-            end
+            compile(File, Inc, Bin, Opt, filetype(File))
     end.
 
-%% find all .erl files in Dir
+filetype(File) ->
+    L = length(hd(string:tokens(File, "."))),
+    string:substr(File, L + 1, length(File)).
+
+compile(File, Inc, Bin, Opt, ".yrl") ->
+    yecc:file(File),
+    compile(yrl_to_erl(File), Inc, Bin, Opt, ".erl");
+compile(File, Inc, Bin, Opt, ".erl") ->
+    BeamFile = erl_to_beam(Bin, File),
+    Compiled = is_compiled(BeamFile, File),
+    if  Compiled =:= false ->
+            io:format("Compiling ~s~n", [File]),
+            Opts1 = ?COMPILE_OPTS(Inc, Bin, Opt),
+            compile:file(File, Opts1),
+            ok;
+        true -> ok
+    end;
+compile(File, _Inc, Bin, _Opt, ".app.src") ->
+    AppFile = filename:join(Bin, app_src_to_app(File)),
+    io:format("Writing ~s~n", [AppFile]),
+    BeamFiles = filelib:wildcard("*.beam", Bin),
+    Modules = [list_to_atom(filename:basename(X, ".beam")) || X <- BeamFiles],
+    [Struct|_] = mad_utils:consult(File),
+    {application, AppName, Props} = Struct,
+    Props1 = add_modules_property(Props),
+    Props2 = [validate_property(X, Modules) || X <- Props1],
+    Struct1 = {application, AppName, Props2},
+    file:write_file(AppFile, io_lib:format("~p.~n", [Struct1])),
+    ok;
+compile(File, _Inc, _Bin, _Opt, _) ->
+    io:format("Unknown file type: ~p~n", [File]).
+
 -spec erl_files(directory()) -> [file:name()].
 erl_files(Dir) ->
     filelib:fold_files(Dir, ".erl", true, fun(F, Acc) -> [F|Acc] end, []).
+
+yrl_files(Dir) ->
+    filelib:fold_files(Dir, ".yrl", true, fun(F, Acc) -> [F|Acc] end, []).
 
 %% find all .app.src files in Dir
 -spec app_src_files(directory()) -> [file:name()].
@@ -152,8 +172,11 @@ app_src_to_app(Filename) ->
     filename:basename(Filename, ".app.src") ++ ".app".
 
 -spec erl_to_beam(directory(), file:name()) -> file:name().
-erl_to_beam(EbinDir, Filename) ->
-    filename:join(EbinDir, filename:basename(Filename, ".erl") ++ ".beam").
+erl_to_beam(Bin, Filename) ->
+    filename:join(Bin, filename:basename(Filename, ".erl") ++ ".beam").
+
+yrl_to_erl(Filename) ->
+    filename:join(filename:dirname(Filename), filename:basename(Filename, ".yrl")) ++ ".erl".
 
 -spec is_compiled(directory(), file:name()) -> boolean().
 is_compiled(BeamFile, File) ->
@@ -172,8 +195,8 @@ add_modules_property(Properties) ->
 sort(Files) ->
     sort_by_priority(Files, [], [], []).
 
--spec sort_by_priority([file:name()], [file:name()], [file:name()], [file:name()])
-                      -> [file:name()].
+-spec sort_by_priority([file:name()], [file:name()], [file:name()],
+                       [file:name()]) -> [file:name()].
 sort_by_priority([], High, Medium, Low) ->
     (High ++ Medium) ++ Low;
 sort_by_priority([H|T], High, Medium, Low) ->
@@ -186,15 +209,15 @@ sort_by_priority([H|T], High, Medium, Low) ->
         end,
     {High2, Medium2, Low2} =
         case mad_utils:exec("sed", ["-n", "'/-compile/p'", H]) of
-               [] ->
+            [] ->
                 {High1, Medium1, Low1};
-               _ ->
+            _ ->
                 {High1 -- [H], Medium1 -- [H], [H|Low1]}
         end,
     sort_by_priority(T, High2, Medium2, Low2).
 
--spec foreach(fun((directory(), filename()) -> ok), [filename()], any(), filename()) ->
-                     ok.
+-spec foreach(fun((directory(), filename()) -> ok), [filename()], any(),
+              filename()) -> ok.
 foreach(_, [], _, _) ->
     ok;
 foreach(Fun, [Dir|T], Config, ConfigFile) ->
@@ -248,10 +271,10 @@ compile_erlydtl_files(Opts) ->
                       BeamFile = erl_to_beam(OutDir, atom_to_list(ModuleName)),
                       Compiled = is_compiled(BeamFile, F),
                       if Compiled =:= false ->
-                              io:format("Compiling ~s~n", [F]),
+                              io:format("DTL Compiling ~s~n", [F]),
                               erlydtl:compile(F, ModuleName, Opts3);
-                         true ->
-                              ok
+                         true -> ok
                       end
               end,
+
     lists:foreach(Compile, Files).
