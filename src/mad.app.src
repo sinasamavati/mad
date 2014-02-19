@@ -10,5 +10,6 @@
                   stdlib
                  ]},
   {mod, { mad_app, []}},
-  {env, []}
+  {env, []},
+  {modules, []}
  ]}.
