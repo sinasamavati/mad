@@ -71,13 +71,14 @@ fetch_dep(Cwd, Config, ConfigFile, Publisher, Name, Cmd, Uri) ->
     fetch(Cwd, Config, ConfigFile, mad_utils:get_value(deps, Conf1, [])).
 
 %% build dependency based on branch/tag/commit
--spec build_dep(directory(), any(), string(), string(), string(), string(), string()) -> ok.
-build_dep(Cwd, Conf, _ConfFile, Publisher, Name, Cmd, Co) ->
+-spec build_dep(directory(), any(), string(), string(), string(), string(),
+                string()) -> ok.
+build_dep(Cwd, Conf, _ConfigFile, Publisher, Name, Cmd, Co) ->
     TrunkPath = path(Publisher, Name),
-    DepsDir = mad_utils:get_value(deps_dir, Conf, "deps"),
+    DepsDir = filename:join(Cwd, mad_utils:get_value(deps_dir, Conf, "deps")),
     %% get a copy of dependency from trunk
     mad_utils:exec("cp", ["-r", TrunkPath, DepsDir]),
-    DepPath = filename:join([Cwd, DepsDir, Name]),
+    DepPath = filename:join(DepsDir, Name),
     %% change cwd to the copy of trunk and checkout to Co
     ok = file:set_cwd(DepPath),
     mad_utils:exec(Cmd, ["checkout", Co]),
