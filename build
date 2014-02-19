@@ -1,6 +1,9 @@
 #!/usr/bin/env escript
 %% -*- erlang -*-
 
+%% This file is part of Mad, and released under the MIT license.
+%% See LICENSE for more information.
+
 main(_) ->
     App = "mad",
     EmuArgs = "-noshell -noinput",

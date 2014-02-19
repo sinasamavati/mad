@@ -1,3 +1,6 @@
+%% This file is part of Mad, and released under the MIT license.
+%% See LICENSE for more information.
+
 -module(mad_deps).
 
 -export([repos_path/0]).
