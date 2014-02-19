@@ -2,6 +2,7 @@
 %% See LICENSE for more information.
 
 -module(mad_deps).
+-author("Sina Samavati <sina.samv@gmail.com>").
 
 -export([repos_path/0]).
 -export([path/2]).

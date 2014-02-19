@@ -2,6 +2,7 @@
 %% See LICENSE for more information.
 
 -module(mad_utils).
+-author("Sina Samavati <sina.samv@gmail.com>").
 
 -export([cwd/0]).
 -export([exec/2]).

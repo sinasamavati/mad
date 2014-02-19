@@ -2,6 +2,7 @@
 %% See LICENSE for more information.
 
 -module(mad_compile).
+-author("Sina Samavati <sina.samv@gmail.com>").
 
 -export([deps/4]).
 -export([app/3]).

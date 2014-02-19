@@ -2,6 +2,7 @@
 %% See LICENSE for more information.
 
 -module(mad).
+-author("Sina Samavati <sina.samv@gmail.com>").
 
 -export([main/1]).
 -export(['fetch-deps'/3]).
