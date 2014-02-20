@@ -3,7 +3,10 @@
 PROJECT = mad
 CT_SUITES = mad_utils mad_deps mad_compile
 
-all: app build
+DEPS = getopt
+dep_getopt = git://github.com/jcomellas/getopt.git v0.8.2
+
+all: deps app build
 
 build:
 	escript build
