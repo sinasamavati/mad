@@ -102,7 +102,7 @@ checkout_to(Else) -> Else.
 
 -spec get_publisher(uri()) -> string().
 get_publisher(Uri) ->
-    S = [{git, 9418}|http_uri:scheme_defaults()],
-    {ok, {_, _, _, _, Path, _}} = http_uri:parse(Uri, [{scheme_defaults, S}]),
+    S = [{git, 9418}|uri_defaults:scheme_defaults()],
+    {ok, {_, _, _, _, Path, _}} = uri:parse(Uri, [{scheme_defaults, S}]),
     [Publisher|_] = string:tokens(Path, "/"),
     Publisher.
