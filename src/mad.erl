@@ -22,6 +22,7 @@ main(Args) ->
                      end,
     maybe_invalid(Params),
     maybe_help(Opts, Params),
+    maybe_version_info(Opts),
 
     Cwd = mad_utils:cwd(),
     ConfigFile = get_value(config_file, Opts, "rebar.config"),
@@ -77,7 +78,7 @@ get_value(Key, Opts, Default) ->
         _ -> Default
     end.
 
-option_spec_list() ->
+option_spec_list_() ->
     [
      {help, $h, "help", undefined, "Displays this message"},
      {config_file, $C, "config", {string, "rebar.config"}, "Rebar config file to use"}
@@ -113,7 +114,6 @@ help(Msg) ->
     help().
 
 help() ->
-    io:format("Erlang dependency manager~n"),
     Params = [
               {"", ""},
               {"fetch-deps", "Fetches dependencies"},
@@ -123,3 +123,29 @@ help() ->
              ],
     getopt:usage(option_spec_list(), escript:script_name(), "", Params),
     halt().
+
+-ifdef(GIT_REVISION).
+option_spec_list() ->
+    option_spec_list_() ++ [{version, undefined, "version", undefined,
+                             "Displays version information"}].
+
+maybe_version_info(Opts) ->
+    case lists:member(version, Opts) of
+        true ->
+            version_info();
+        false ->
+            ok
+    end.
+
+version_info() ->
+    io:format("mad ~s (~s) ~s, timestamp: ~p~n", [?VSN_NUMBER, ?GIT_REVISION,
+                                                  ?OTP_RELEASE, ?TIMESTAMP]),
+    halt().
+
+-else.
+option_spec_list() ->
+    option_spec_list_().
+
+maybe_version_info(_) -> ok.
+
+-endif.
