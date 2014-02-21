@@ -7,9 +7,18 @@ DEPS = getopt uri
 dep_getopt = git://github.com/jcomellas/getopt.git v0.8.2
 dep_uri = git://github.com/heroku/uri.git master
 
-all: deps app build
+all: deps app_file build
+
+app_file:
+	@mkdir -p ebin
+	$(eval MODULES := $(shell find ebin -type f -name \*.beam \
+		| sed 's/ebin\///;s/\.beam/,/' | sed '$$s/.$$//'))
+	$(appsrc_verbose) cat src/$(PROJECT).app.src \
+		| sed 's/{modules,[[:space:]]*\[\]}/{modules, \[$(MODULES)\]}/' \
+		> ebin/$(PROJECT).app
 
 build:
+	@mkdir -p ebin
 	escript build
 
 test: tests
