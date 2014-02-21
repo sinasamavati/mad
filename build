@@ -5,6 +5,19 @@
 %% See LICENSE for more information.
 
 main(_) ->
+    code:add_path("ebin"),
+    ok = application:load(mad),
+    {ok, Vsn} = application:get_key(mad, vsn),
+    make:files(filelib:wildcard(filename:join("src", "*.erl")),
+               [debug_info,
+                {outdir, "ebin"},
+                {d, 'VSN_NUMBER', Vsn},
+                {d, 'TIMESTAMP', timestamp()},
+                {d, 'GIT_REVISION', revision()},
+                {d, 'OTP_RELEASE', erlang:system_info(otp_release)}]),
+    escriptize().
+
+escriptize() ->
     App = "mad",
     EmuArgs = "-noshell -noinput",
     escript:create(App, [shebang, {comment, ""}, {emu_args, EmuArgs},
@@ -19,3 +32,10 @@ files() ->
 read_file(File) ->
     {ok, Bin} = file:read_file(filename:absname(File)),
     Bin.
+
+timestamp() ->
+    {Mega, Sec, _} = erlang:now(),
+    Mega * 1000000 + Sec.
+
+revision() ->
+    os:cmd("git rev-parse --short HEAD") -- "\n".
