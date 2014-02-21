@@ -88,7 +88,8 @@ maybe_help(Opts, Params) ->
     Fun = fun(L) ->
                   case lists:member(help, L) of
                       true ->
-                          help();
+                          help(),
+                          halt(0);
                       false ->
                           ok
                   end
@@ -111,7 +112,8 @@ help(Reason, Data) ->
 
 help(Msg) ->
     io:format("Error: ~s~n~n", [Msg]),
-    help().
+    help(),
+    halt(1).
 
 help() ->
     Params = [
@@ -121,8 +123,7 @@ help() ->
               {"compile-app", "Compiles application"},
               {"compile", "Compiles dependencies and application"}
              ],
-    getopt:usage(option_spec_list(), escript:script_name(), "", Params),
-    halt().
+    getopt:usage(option_spec_list(), escript:script_name(), "", Params).
 
 -ifdef(GIT_REVISION).
 option_spec_list() ->
@@ -138,8 +139,8 @@ maybe_version_info(Opts) ->
     end.
 
 version_info() ->
-    io:format("mad ~s (~s) ~s, timestamp: ~p~n", [?VSN_NUMBER, ?GIT_REVISION,
-                                                  ?OTP_RELEASE, ?TIMESTAMP]),
+    io:format("mad ~s (~s) ~s ~p~n", [?VSN_NUMBER, ?GIT_REVISION,
+                                      ?OTP_RELEASE, ?TIMESTAMP]),
     halt().
 
 -else.
