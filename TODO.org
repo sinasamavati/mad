@@ -1,0 +1,19 @@
+* v0.1
+
+** dependency management
+*** DONE fetch a repo and put it in ~/.mad/repos/[publisher]/[repo]
+*** DONE copy deps from cache (~/.mad/repos) and use the specified revision (tag/branch/commit)
+*** DONE fetch dependencies of dependencies
+*** DONE support git
+*** DONE support rebar.config.script
+*** TODO support svn and mercurial
+*** TODO update cache before copying
+
+** build system
+*** DONE compile erl files (support erl_opts)
+*** DONE support sub_dirs and lib_dirs
+*** DONE compile erlydtl templates (support erlydtl_opts)
+*** DONE compile behaviours and parse_transform modules first (uses sed)
+*** DONE compile yrl files (done by Namdak Tonpa)
+*** TODO compile NIFs
+*** TODO compile assembler files
