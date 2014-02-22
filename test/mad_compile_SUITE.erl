@@ -39,7 +39,8 @@ is_app_src(_) ->
     true = mad_compile:is_app_src("/path/to/file.app.src").
 
 app_src_to_app(_) ->
-    "file.app" = mad_compile:app_src_to_app("/path/to/file.app.src").
+    "/path/to/ebin/file.app" = mad_compile:app_src_to_app("/path/to/ebin",
+                                                          "/path/to/file.app.src").
 
 erl_to_beam(_) ->
     "/path/to/ebin/file.beam" = mad_compile:erl_to_beam("/path/to/ebin",

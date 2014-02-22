@@ -12,7 +12,7 @@
 -export([erl_files/1]).
 -export([app_src_files/1]).
 -export([is_app_src/1]).
--export([app_src_to_app/1]).
+-export([app_src_to_app/2]).
 -export([erl_to_beam/2]).
 -export([is_compiled/2]).
 
@@ -141,7 +141,7 @@ compile(File, Inc, Bin, Opt, ".erl") ->
         true -> ok
     end;
 compile(File, _Inc, Bin, _Opt, ".app.src") ->
-    AppFile = filename:join(Bin, app_src_to_app(File)),
+    AppFile = app_src_to_app(Bin, File),
     io:format("Writing ~s~n", [AppFile]),
     BeamFiles = filelib:wildcard("*.beam", Bin),
     Modules = [list_to_atom(filename:basename(X, ".beam")) || X <- BeamFiles],
@@ -172,9 +172,9 @@ app_src_files(Dir) ->
 is_app_src(Filename) ->
     Filename =/= filename:rootname(Filename, ".app.src").
 
--spec app_src_to_app(file:name()) -> file:name().
-app_src_to_app(Filename) ->
-    filename:basename(Filename, ".app.src") ++ ".app".
+-spec app_src_to_app(directory(), filename()) -> filename().
+app_src_to_app(Bin, Filename) ->
+    filename:join(Bin, filename:basename(Filename, ".app.src") ++ ".app").
 
 -spec erl_to_beam(directory(), filename()) -> filename().
 erl_to_beam(Bin, Filename) ->
