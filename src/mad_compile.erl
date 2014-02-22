@@ -155,10 +155,11 @@ compile(File, _Inc, Bin, _Opt, ".app.src") ->
 compile(File, _Inc, _Bin, _Opt, _) ->
     io:format("Unknown file type: ~p~n", [File]).
 
--spec erl_files(directory()) -> [file:name()].
+-spec erl_files(directory()) -> [filename()].
 erl_files(Dir) ->
     filelib:fold_files(Dir, ".erl", true, fun(F, Acc) -> [F|Acc] end, []).
 
+-spec yrl_files(directory()) -> [filename()].
 yrl_files(Dir) ->
     filelib:fold_files(Dir, ".yrl", true, fun(F, Acc) -> [F|Acc] end, []).
 
@@ -179,6 +180,7 @@ app_src_to_app(Filename) ->
 erl_to_beam(Bin, Filename) ->
     filename:join(Bin, filename:basename(Filename, ".erl") ++ ".beam").
 
+-spec yrl_to_erl(filename()) -> filename().
 yrl_to_erl(Filename) ->
     filename:join(filename:dirname(Filename), filename:basename(Filename, ".yrl")) ++ ".erl".
 
