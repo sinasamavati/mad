@@ -175,7 +175,7 @@ is_app_src(Filename) ->
 app_src_to_app(Filename) ->
     filename:basename(Filename, ".app.src") ++ ".app".
 
--spec erl_to_beam(directory(), file:name()) -> file:name().
+-spec erl_to_beam(directory(), filename()) -> filename().
 erl_to_beam(Bin, Filename) ->
     filename:join(Bin, filename:basename(Filename, ".erl") ++ ".beam").
 
