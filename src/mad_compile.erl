@@ -182,7 +182,7 @@ erl_to_beam(Bin, Filename) ->
 
 -spec yrl_to_erl(filename()) -> filename().
 yrl_to_erl(Filename) ->
-    filename:join(filename:dirname(Filename), filename:basename(Filename, ".yrl")) ++ ".erl".
+    filename:rootname(Filename, ".yrl") ++ ".erl".
 
 -spec is_compiled(directory(), file:name()) -> boolean().
 is_compiled(BeamFile, File) ->
