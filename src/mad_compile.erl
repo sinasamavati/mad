@@ -149,20 +149,20 @@ filetype(File) ->
     L = length(hd(string:tokens(File, "."))),
     string:substr(File, L + 1, length(File)).
 
-compile(File, Inc, Bin, Opt, ".yrl") ->
+compile(File, Inc, Bin, Opts, ".yrl") ->
     yecc:file(File),
-    compile(yrl_to_erl(File), Inc, Bin, Opt, ".erl");
-compile(File, Inc, Bin, Opt, ".erl") ->
+    compile(yrl_to_erl(File), Inc, Bin, Opts, ".erl");
+compile(File, Inc, Bin, Opts, ".erl") ->
     BeamFile = erl_to_beam(Bin, File),
     Compiled = is_compiled(BeamFile, File),
     if  Compiled =:= false ->
             io:format("Compiling ~s~n", [File]),
-            Opts1 = ?COMPILE_OPTS(Inc, Bin, Opt),
+            Opts1 = ?COMPILE_OPTS(Inc, Bin, Opts),
             compile:file(File, Opts1),
             ok;
         true -> ok
     end;
-compile(File, _Inc, Bin, _Opt, ".app.src") ->
+compile(File, _Inc, Bin, _Opts, ".app.src") ->
     AppFile = app_src_to_app(Bin, File),
     io:format("Writing ~s~n", [AppFile]),
     BeamFiles = filelib:wildcard("*.beam", Bin),
@@ -174,7 +174,7 @@ compile(File, _Inc, Bin, _Opt, ".app.src") ->
     Struct1 = {application, AppName, Props2},
     file:write_file(AppFile, io_lib:format("~p.~n", [Struct1])),
     ok;
-compile(File, _Inc, _Bin, _Opt, _) ->
+compile(File, _Inc, _Bin, _Opts, _) ->
     io:format("Unknown file type: ~p~n", [File]).
 
 -spec erl_files(directory()) -> [filename()].
