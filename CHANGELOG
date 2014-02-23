@@ -1,0 +1,7 @@
+2014-02-23  Sina Samavati  <sina.samv@gmail.com>
+
+	* 0.1.0: support deps_dir, deps, erl_opts, lib_dirs, sub_dirs and erlydtl_opts options (rebar.config)
+	fetch dependencies and cache them in ~/.mad/repos/
+	compile erl, yrl and erlytdl files
+	support specifying rebar config file to use and evaluate rebar.config.script
+	support git

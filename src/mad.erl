@@ -67,7 +67,7 @@ main(Args) ->
             ok;
         Deps ->
             file:make_dir(mad_deps:repos_path()),
-            DepsDir = get_value(deps_dir, Conf, ["deps"]),
+            DepsDir = get_value(deps_dir, Conf, "deps"),
             file:make_dir(DepsDir),
             mad_deps:fetch(Cwd, Conf, ConfigFile, Deps)
     end.
