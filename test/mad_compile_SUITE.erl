@@ -27,6 +27,7 @@
 -export([app_src_files/1]).
 -export([app_src_to_app/1]).
 -export([erl_to_beam/1]).
+-export([filetype/1]).
 -export([deps/1]).
 -export([app/1]).
 -export([is_compiled/1]).
@@ -36,7 +37,7 @@
 
 all() ->
     [
-     erl_files, app_src_files, app_src_to_app, erl_to_beam, deps, app,
+     erl_files, app_src_files, app_src_to_app, erl_to_beam, filetype, deps, app,
      is_compiled
     ].
 
@@ -59,6 +60,17 @@ app_src_to_app(_) ->
 erl_to_beam(_) ->
     "/path/to/ebin/file.beam" = mad_compile:erl_to_beam("/path/to/ebin",
                                                         "/path/to/file.erl").
+
+filetype(_) ->
+    ".erl" = mad_compile:filetype("file_.erl"),
+    ".erl" = mad_compile:filetype("/path/to/file_.erl"),
+    ".erl" = mad_compile:filetype("/path/to/___file_.erl"),
+    ".app.src" = mad_compile:filetype("_file.app.src"),
+    ".app.src" = mad_compile:filetype("/path/to/file.app.src"),
+    ".app.src" = mad_compile:filetype("/path/to/___file_.app.src"),
+    ".yrl" = mad_compile:filetype("file_.yrl"),
+    ".yrl" = mad_compile:filetype("/path/to/file.yrl"),
+    ".yrl" = mad_compile:filetype("/path/to/__file_.yrl").
 
 deps(Config) ->
     DataDir = get_value(data_dir, Config),
