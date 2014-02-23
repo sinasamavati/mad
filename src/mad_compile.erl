@@ -172,8 +172,14 @@ compile(File, _Inc, _Bin, _Opts, _) ->
     io:format("Unknown file type: ~p~n", [File]).
 
 compile_xyrl(File, Inc, Bin, Opts, Type, Mod) ->
-    Mod:file(File, [{verbose, true}]),
-    compile(to_erl(File), Inc, Bin, Opts, Type).
+    Target = to_erl(File),
+    case is_compiled(Target, File) of
+        false ->
+            Mod:file(File, [{verbose, true}]),
+            compile(Target, Inc, Bin, Opts, Type);
+        true ->
+            ok
+    end.
 
 -spec erl_files(directory()) -> [filename()].
 erl_files(Dir) ->
@@ -202,8 +208,8 @@ to_erl(Filename) ->
     filename:rootname(Filename) ++ ".erl".
 
 -spec is_compiled(directory(), file:name()) -> boolean().
-is_compiled(BeamFile, File) ->
-    mad_utils:last_modified(BeamFile) > mad_utils:last_modified(File).
+is_compiled(Target, File) ->
+    mad_utils:last_modified(Target) >= mad_utils:last_modified(File).
 
 -spec add_modules_property([{atom(), term()}]) -> [{atom(), term()}].
 add_modules_property(Properties) ->
