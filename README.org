@@ -1,8 +1,11 @@
 * Mad [[https://travis-ci.org/s1n4/mad][https://travis-ci.org/s1n4/mad.png?branch=master]]
 
+  Mad is a simple dependency manager for Erlang.
+
   Mad can read your rebar configuration file, evaluate your rebar script
-  (rebar.config.script), fetch dependencies and cache them, compile dependencies
-  and your application.
+  (rebar.config.script), fetch and cache dependencies.
+
+  Moreover, Mad can compile dependencies and your application.
 
 ** Requirement
    - Erlang/OTP R14 or newer
