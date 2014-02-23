@@ -21,7 +21,7 @@ build: app-file
 
 define run_eunit
 	$(gen_verbose) erl -noshell -pa ebin $(DEPS_DIR)/*/ebin test -eval ' \
-		case eunit:test({dir, "test"}) of \
+		case eunit:test({dir, "test"}, [verbose]) of \
 			error -> halt(1); \
 			_ -> halt(0) \
 		end'
