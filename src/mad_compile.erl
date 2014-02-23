@@ -70,7 +70,7 @@ dep(Cwd, Conf, ConfigFile, Name) ->
     foreach(fun app/3, SubDirs, Conf, ConfigFile),
 
     SrcDir = mad_utils:src(DepPath),
-    Files = xyrl_files(SrcDir) ++ sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
+    Files = sort_files(files(SrcDir)),
 
     case Files of
         [] -> ok;
@@ -97,7 +97,7 @@ app(Dir, Conf, ConfigFile) ->
     ConfigFile1 = filename:join(Dir, ConfigFile),
     Conf1 = mad_utils:script(ConfigFile1, Conf),
     SrcDir = mad_utils:src(Dir),
-    Files = xyrl_files(SrcDir) ++ sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
+    Files = sort_fiels(files(SrcDir)),
 
     case Files of
         [] -> ok;
@@ -181,19 +181,9 @@ compile_xyrl(File, Inc, Bin, Opts, Type, Mod) ->
             ok
     end.
 
--spec erl_files(directory()) -> [filename()].
-erl_files(Dir) ->
-    filelib:fold_files(Dir, ".erl", true, fun(F, Acc) -> [F|Acc] end, []).
-
--spec xyrl_files(directory()) -> [filename()].
-xyrl_files(Dir) ->
-    filelib:fold_files(Dir, ".xrl", true, fun(F, Acc) -> [F|Acc] end, []) ++
-        filelib:fold_files(Dir, ".yrl", true, fun(F, Acc) -> [F|Acc] end, []).
-
-%% find all .app.src files in Dir
--spec app_src_files(directory()) -> [file:name()].
-app_src_files(Dir) ->
-    filelib:fold_files(Dir, ".app.src", true, fun(F, Acc) -> [F|Acc] end, []).
+-spec files(directory()) -> [filename()].
+files(Dir) ->
+    filelib:fold_files(Dir, ".*", true, fun(F, Acc) -> [F|Acc] end, []).
 
 -spec app_src_to_app(directory(), filename()) -> filename().
 app_src_to_app(Bin, Filename) ->
@@ -220,15 +210,38 @@ add_modules_property(Properties) ->
             Properties ++ [{modules, []}]
     end.
 
--spec sort([file:name()]) -> [file:name()].
-sort(Files) ->
-    sort_by_priority(Files, [], [], []).
+-spec split_files([filename()]) -> {[filename()], [filename()], [filename()]}.
+split_files(Files) ->
+    split_files(Files, [], [], []).
 
--spec sort_by_priority([file:name()], [file:name()], [file:name()],
-                       [file:name()]) -> [file:name()].
-sort_by_priority([], High, Medium, Low) ->
+-spec split_files([filename()], [filename()], [filename()], [filename()]) ->
+                         {[filename()], [filename()], [filename()]}.
+split_files([], XYrlFiles, ErlFiles, OtherFiles) ->
+    {XYrlFiles, ErlFiles, OtherFiles};
+split_files([File|Rest], XYrlFiles, ErlFiles, OtherFiles) ->
+    {A, B, C} = case filetype(File) of
+                    ".xrl" ->
+                        {[File|XYrlFiles], ErlFiles, OtherFiles};
+                    ".yrl" ->
+                        {XYrlFiles ++ [File], ErlFiles, OtherFiles};
+                    ".erl" ->
+                        {XYrlFiles, ErlFiles ++ [File], OtherFiles};
+                    _ ->
+                        {XYrlFiles, ErlFiles, OtherFiles ++ [File]}
+                end,
+    split_files(Rest, A, B, C).
+
+-spec sort_files([filename()]) -> [filename()].
+sort_files(Files) ->
+    {XYrlFiles, ErlFiles, OtherFiles} = split_files(Files),
+    ErlFiles1 = sort_files_by_priority(ErlFiles, [], [], []),
+    XYrlFiles ++ ErlFiles1 ++ OtherFiles.
+
+-spec sort_files_by_priority([filename()], [filename()], [filename()],
+                             [filename()]) -> [filename()].
+sort_files_by_priority([], High, Medium, Low) ->
     (High ++ Medium) ++ Low;
-sort_by_priority([H|T], High, Medium, Low) ->
+sort_files_by_priority([H|T], High, Medium, Low) ->
     {High1, Medium1, Low1} =
         case is_behaviour(H) of
             true ->
@@ -243,7 +256,7 @@ sort_by_priority([H|T], High, Medium, Low) ->
             _ ->
                 {High1 -- [H], Medium1 -- [H], [H|Low1]}
         end,
-    sort_by_priority(T, High2, Medium2, Low2).
+    sort_files_by_priority(T, High2, Medium2, Low2).
 
 -spec foreach(fun((directory(), filename()) -> ok), [filename()], any(),
               filename()) -> ok.
