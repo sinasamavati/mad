@@ -57,16 +57,20 @@ deps(Cwd, Conf, ConfigFile, [H|T]) ->
 
 %% compile a dependency
 -spec dep(directory(), any(), filename(), string()) -> ok.
-dep(Cwd, _Conf, ConfigFile, Name) ->
+dep(Cwd, Conf, ConfigFile, Name) ->
     %% check dependencies of the dependency
-    DepPath = filename:join([Cwd, "deps", Name]),
+    DepPath = filename:join([Cwd, mad_utils:get_value(deps_dir, Conf, "deps"),
+                             Name]),
     DepConfigFile = filename:join(DepPath, ConfigFile),
-    Conf = mad_utils:consult(DepConfigFile),
-    Conf1 = mad_utils:script(DepConfigFile, Conf),
-    deps(Cwd, Conf, ConfigFile, mad_utils:get_value(deps, Conf1, [])),
+
+    %% read rebar config file and evaluate rebar script file
+    DepConf = mad_utils:consult(DepConfigFile),
+    DepConf1 = mad_utils:script(DepConfigFile, DepConf),
+
+    deps(Cwd, Conf, ConfigFile, mad_utils:get_value(deps, DepConf1, [])),
 
     %% add lib_dirs to path
-    LibDirs = mad_utils:lib_dirs(DepPath, Conf1),
+    LibDirs = mad_utils:lib_dirs(DepPath, DepConf1),
     code:add_paths(LibDirs),
 
     %% compile sub_dirs and add them to path
@@ -86,11 +90,11 @@ dep(Cwd, _Conf, ConfigFile, Name) ->
             file:make_dir(EbinDir),
             code:add_path(EbinDir),
 
-            Opts = mad_utils:get_value(erl_opts, Conf1, []),
+            Opts = mad_utils:get_value(erl_opts, DepConf1, []),
             lists:foreach(compile_fun(IncDir, EbinDir, Opts), Files),
 
             %% compile erlydtl templates
-            dtl(DepPath, Conf1),
+            dtl(DepPath, DepConf1),
 
             put(Name, compiled),
             ok
