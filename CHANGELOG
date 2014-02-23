@@ -1,6 +1,8 @@
 2014-02-24  Sina Samavati  <sina.samv@gmail.com>
 
-	* src/mad_compile.erl add files/1 sort_files/1 split_files/1
+	* src/mad_compile.erl: change compile/5 to return 'unknown_file' when there's no rule defined for a file
+
+	* src/mad_compile.erl: add files/1 sort_files/1 split_files/1
 	remove xyrl_files/1 erl_files/1 app_src_files/1
 
 	* src/mad_compile.erl: change is_compiled/2 to return true if target's mtime is equal-greater than

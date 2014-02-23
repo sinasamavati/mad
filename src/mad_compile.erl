@@ -168,8 +168,8 @@ compile(File, _Inc, Bin, _Opts, ".app.src") ->
     Struct1 = {application, AppName, Props2},
     file:write_file(AppFile, io_lib:format("~p.~n", [Struct1])),
     ok;
-compile(File, _Inc, _Bin, _Opts, _) ->
-    io:format("Unknown file type: ~p~n", [File]).
+compile(_, _, _, _, _) ->
+    unknown_files.
 
 compile_xyrl(File, Inc, Bin, Opts, Type, Mod) ->
     Target = to_erl(File),
