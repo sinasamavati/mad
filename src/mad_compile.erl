@@ -26,14 +26,6 @@
 -export([app/3]).
 -export([foreach/4]).
 
-%% internal
--export([erl_files/1]).
--export([app_src_files/1]).
--export([is_app_src/1]).
--export([app_src_to_app/2]).
--export([erl_to_beam/2]).
--export([is_compiled/2]).
-
 -define(COMPILE_OPTS(Inc, Ebin, Opts),
         [report, {i, Inc}, {outdir, Ebin}] ++ Opts).
 
@@ -124,6 +116,7 @@ app(Dir, Conf, ConfigFile) ->
     dtl(Dir,Conf1),
     ok.
 
+%% ask for erlydtl_opts and compile erlydtl templates
 dtl(Dir, Config) ->
     case mad_utils:get_value(erlydtl_opts, Config, []) of
         [] -> skip;
@@ -189,10 +182,6 @@ yrl_files(Dir) ->
 -spec app_src_files(directory()) -> [file:name()].
 app_src_files(Dir) ->
     filelib:fold_files(Dir, ".app.src", true, fun(F, Acc) -> [F|Acc] end, []).
-
--spec is_app_src(file:name()) -> boolean().
-is_app_src(Filename) ->
-    Filename =/= filename:rootname(Filename, ".app.src").
 
 -spec app_src_to_app(directory(), filename()) -> filename().
 app_src_to_app(Bin, Filename) ->

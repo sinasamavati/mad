@@ -25,7 +25,6 @@
 -export([all/0]).
 -export([erl_files/1]).
 -export([app_src_files/1]).
--export([is_app_src/1]).
 -export([app_src_to_app/1]).
 -export([erl_to_beam/1]).
 -export([deps/1]).
@@ -37,8 +36,8 @@
 
 all() ->
     [
-     erl_files, app_src_files, is_app_src, app_src_to_app, erl_to_beam, deps,
-     app, is_compiled
+     erl_files, app_src_files, app_src_to_app, erl_to_beam, deps, app,
+     is_compiled
     ].
 
 erl_files(Config) ->
@@ -52,10 +51,6 @@ app_src_files(Config) ->
     SrcDir = filename:join([DataDir, "deps", "one", "src"]),
     AppSrcFile = filename:join(SrcDir, "one.app.src"),
     [AppSrcFile] = mad_compile:app_src_files(SrcDir).
-
-is_app_src(_) ->
-    false = mad_compile:is_app_src("/path/to/file.erl"),
-    true = mad_compile:is_app_src("/path/to/file.app.src").
 
 app_src_to_app(_) ->
     "/path/to/ebin/file.app" = mad_compile:app_src_to_app("/path/to/ebin",
