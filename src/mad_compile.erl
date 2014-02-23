@@ -70,7 +70,7 @@ dep(Cwd, Conf, ConfigFile, Name) ->
     foreach(fun app/3, SubDirs, Conf, ConfigFile),
 
     SrcDir = mad_utils:src(DepPath),
-    Files = yrl_files(SrcDir) ++ sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
+    Files = xyrl_files(SrcDir) ++ sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
 
     case Files of
         [] -> ok;
@@ -97,7 +97,7 @@ app(Dir, Conf, ConfigFile) ->
     ConfigFile1 = filename:join(Dir, ConfigFile),
     Conf1 = mad_utils:script(ConfigFile1, Conf),
     SrcDir = mad_utils:src(Dir),
-    Files = yrl_files(SrcDir) ++ sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
+    Files = xyrl_files(SrcDir) ++ sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
 
     case Files of
         [] -> ok;
@@ -142,9 +142,10 @@ filetype(File) ->
     L = length(hd(string:tokens(File, "."))),
     string:substr(File, L + 1, length(File)).
 
+compile(File, Inc, Bin, Opts, ".xrl") ->
+    compile_xyrl(File, Inc, Bin, Opts, ".erl", leex);
 compile(File, Inc, Bin, Opts, ".yrl") ->
-    yecc:file(File),
-    compile(yrl_to_erl(File), Inc, Bin, Opts, ".erl");
+    compile_xyrl(File, Inc, Bin, Opts, ".erl", yecc);
 compile(File, Inc, Bin, Opts, ".erl") ->
     BeamFile = erl_to_beam(Bin, File),
     Compiled = is_compiled(BeamFile, File),
@@ -170,13 +171,18 @@ compile(File, _Inc, Bin, _Opts, ".app.src") ->
 compile(File, _Inc, _Bin, _Opts, _) ->
     io:format("Unknown file type: ~p~n", [File]).
 
+compile_xyrl(File, Inc, Bin, Opts, Type, Mod) ->
+    Mod:file(File, [{verbose, true}]),
+    compile(to_erl(File), Inc, Bin, Opts, Type).
+
 -spec erl_files(directory()) -> [filename()].
 erl_files(Dir) ->
     filelib:fold_files(Dir, ".erl", true, fun(F, Acc) -> [F|Acc] end, []).
 
--spec yrl_files(directory()) -> [filename()].
-yrl_files(Dir) ->
-    filelib:fold_files(Dir, ".yrl", true, fun(F, Acc) -> [F|Acc] end, []).
+-spec xyrl_files(directory()) -> [filename()].
+xyrl_files(Dir) ->
+    filelib:fold_files(Dir, ".xrl", true, fun(F, Acc) -> [F|Acc] end, []) ++
+        filelib:fold_files(Dir, ".yrl", true, fun(F, Acc) -> [F|Acc] end, []).
 
 %% find all .app.src files in Dir
 -spec app_src_files(directory()) -> [file:name()].
@@ -191,9 +197,9 @@ app_src_to_app(Bin, Filename) ->
 erl_to_beam(Bin, Filename) ->
     filename:join(Bin, filename:basename(Filename, ".erl") ++ ".beam").
 
--spec yrl_to_erl(filename()) -> filename().
-yrl_to_erl(Filename) ->
-    filename:rootname(Filename, ".yrl") ++ ".erl".
+-spec to_erl(filename()) -> filename().
+to_erl(Filename) ->
+    filename:rootname(Filename) ++ ".erl".
 
 -spec is_compiled(directory(), file:name()) -> boolean().
 is_compiled(BeamFile, File) ->
