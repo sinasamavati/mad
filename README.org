@@ -1,0 +1,43 @@
+* Mad [[https://travis-ci.org/s1n4/mad][https://travis-ci.org/s1n4/mad.png?branch=master]]
+
+
+A simple dependency manager for Erlang.
+
+Mad can read your rebar configuration file, evaluate your rebar script
+(rebar.config.script), fetch dependencies and cache them, compile dependencies
+and your application.
+
+** Requirement
+
+- Erlang/OTP R14 or newer
+
+** Get it
+
+   Clone it and just run ~make~. This builds the standalone escript executable
+   ~mad~, then put it in your ~$PATH~.
+
+** Test it
+   #+BEGIN_SRC
+   $ make test
+   #+END_SRC
+
+** Use it
+   #+BEGIN_SRC
+   $ mad -h
+   Usage: ./mad [-h] [-C [<config_file>]] [--version]
+
+     -h, --help    Displays this message
+     -C, --config  Rebar config file to use [default: rebar.config]
+     --version     Displays version information
+
+     fetch-deps    Fetches dependencies
+     compile-deps  Compiles dependencies
+     compile-app   Compiles application
+     compile       Compiles dependencies and application
+   #+END_SRC
+
+** Contribute
+
+- Open up [[https://github.com/s1n4/mad/issues][issues]]
+- Share your thoughts
+- Send pull-request
