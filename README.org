@@ -41,3 +41,19 @@ and your application.
 - Open up [[https://github.com/s1n4/mad/issues][issues]]
 - Share your thoughts
 - Send pull-request
+
+** Roadmap
+
+*** v0.1
+    - cache dependencies (*DONE*)
+    - support ~deps_dir~ ~deps~, ~erl_opts~, ~lib_dirs~, ~sub_dirs~,
+      ~erlydtl_opts~ (*DONE*)
+    - support compiling ~erl~, ~yrl~, ~xrl~ and assembler files (*INCOMPLETE*)
+    - support Git, SVN and Mercurial (*INCOMPLETE*)
+    - support compiling NIFs
+
+*** v0.2
+    - make a global configuration for overriding cache path and which protocol
+      to fetch repository from (HTTPS, Git or SSH)
+    - make a local configuration for handling dependencies
+      (an alternative for rebar.config)
