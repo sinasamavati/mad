@@ -1,0 +1,2 @@
+-include_lib("eunit/include/eunit.hrl").
+-define(DATA_DIR, filename:join(?TEST_DIR, ?MODULE) ++ "_data").
