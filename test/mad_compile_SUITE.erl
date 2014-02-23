@@ -23,8 +23,7 @@
 -module(mad_compile_SUITE).
 
 -export([all/0]).
--export([erl_files/1]).
--export([app_src_files/1]).
+-export([files/1]).
 -export([app_src_to_app/1]).
 -export([erl_to_beam/1]).
 -export([filetype/1]).
@@ -37,21 +36,16 @@
 
 all() ->
     [
-     erl_files, app_src_files, app_src_to_app, erl_to_beam, filetype, deps, app,
-     is_compiled
+     files, app_src_to_app, erl_to_beam, filetype, deps, app, is_compiled
     ].
 
-erl_files(Config) ->
+files(Config) ->
     DataDir = get_value(data_dir, Config),
     SrcDir = filename:join([DataDir, "deps", "one", "src"]),
-    ErlFile = filename:join(SrcDir, "one.erl"),
-    [ErlFile] = mad_compile:erl_files(SrcDir).
-
-app_src_files(Config) ->
-    DataDir = get_value(data_dir, Config),
-    SrcDir = filename:join([DataDir, "deps", "one", "src"]),
-    AppSrcFile = filename:join(SrcDir, "one.app.src"),
-    [AppSrcFile] = mad_compile:app_src_files(SrcDir).
+    Files = [filename:join(SrcDir, "one.app.src"),
+             filename:join(SrcDir, "one.erl"),
+             filename:join(SrcDir, "one_src.hrl")],
+    Files = mad_compile:files(SrcDir).
 
 app_src_to_app(_) ->
     "/path/to/ebin/file.app" = mad_compile:app_src_to_app("/path/to/ebin",
@@ -101,7 +95,7 @@ is_compiled(Config) ->
     DataDir = get_value(data_dir, Config),
     SrcDir = filename:join([DataDir, "deps", "one", "src"]),
     EbinDir = filename:join([SrcDir, "..", "ebin"]),
-    BeamFile1 = filename:join(EbinDir, "x.beam"),
+    BeamFile1 = filename:join(EbinDir, "x_one.beam"),
     BeamFile2 = filename:join(EbinDir, "one.beam"),
-    false = mad_compile:is_compiled(BeamFile1, filename:join(SrcDir, "x.erl")),
+    false = mad_compile:is_compiled(BeamFile1, filename:join(SrcDir, "one.erl")),
     true = mad_compile:is_compiled(BeamFile2, filename:join(SrcDir, "one.erl")).
