@@ -24,6 +24,7 @@ build:
 rm-beams:
 	rm ebin/*.beam
 
+test: ERLC_OPTS += "+export_all"
 test: tests rm-beams build
 	./mad --version
 
