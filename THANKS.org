@@ -1,0 +1,10 @@
+* Acknowledgments
+
+  The following people contributed to making this project better by sending
+  patches, reporting bugs and/or sharing helpful thoughts.
+
+  - Brian L. Troutwine (@blt)
+  - Tristan Sloughter (@tsloughter)
+  - Seth Falcon (@seth)
+  - Hamidreza Soleimani (@hamidreza-s)
+  - Namdak Tonpa (@5HT)
