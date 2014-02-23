@@ -97,7 +97,7 @@ app(Dir, Conf, ConfigFile) ->
     ConfigFile1 = filename:join(Dir, ConfigFile),
     Conf1 = mad_utils:script(ConfigFile1, Conf),
     SrcDir = mad_utils:src(Dir),
-    Files = sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
+    Files = yrl_files(SrcDir) ++ sort(erl_files(SrcDir)) ++ app_src_files(SrcDir),
 
     case Files of
         [] -> ok;
