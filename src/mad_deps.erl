@@ -78,7 +78,7 @@ fetch(Cwd, Config, ConfigFile, [H|T]) ->
 
 -spec fetch_dep(directory(), any(), filename(), string(), string(), string(), uri())
                -> ok.
-fetch_dep(Cwd, _Config, ConfigFile, Publisher, Name, Cmd, Uri) ->
+fetch_dep(Cwd, Config, ConfigFile, Publisher, Name, Cmd, Uri) ->
     TrunkPath = path(Publisher, Name),
     Opts = ["clone", Uri, TrunkPath],
     io:format("dependency: ~s~n", [Name]),
@@ -90,7 +90,7 @@ fetch_dep(Cwd, _Config, ConfigFile, Publisher, Name, Cmd, Uri) ->
     TrunkConfigFile = filename:join(TrunkPath, ConfigFile),
     DepConf = mad_utils:consult(TrunkConfigFile),
     DepConf1 = mad_utils:script(TrunkConfigFile, DepConf),
-    fetch(Cwd, DepConf, ConfigFile, mad_utils:get_value(deps, DepConf1, [])).
+    fetch(Cwd, Config, ConfigFile, mad_utils:get_value(deps, DepConf1, [])).
 
 %% build dependency based on branch/tag/commit
 -spec build_dep(directory(), any(), string(), string(), string(), string(),

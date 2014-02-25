@@ -1,3 +1,7 @@
+2014-02-25  Sina Samavati  <sina.samv@gmail.com>
+
+	* src/mad_deps.erl (fetch_dep/7): use the same config for building dependencies
+
 2014-02-24  Sina Samavati  <sina.samv@gmail.com>
 
 	* src/mad_compile.erl: change compile/5 to return 'unknown_file' when there's no rule defined for a file
