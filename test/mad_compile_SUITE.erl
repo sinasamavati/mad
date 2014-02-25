@@ -45,7 +45,7 @@ files(Config) ->
     Files = [filename:join(SrcDir, "one.app.src"),
              filename:join(SrcDir, "one.erl"),
              filename:join(SrcDir, "one_src.hrl")],
-    Files = mad_compile:files(SrcDir).
+    true = (lists:usort(Files) =:= lists:usort(mad_compile:files(SrcDir))).
 
 app_src_to_app(_) ->
     "/path/to/ebin/file.app" = mad_compile:app_src_to_app("/path/to/ebin",
