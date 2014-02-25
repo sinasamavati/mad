@@ -32,6 +32,7 @@
 -type directory() :: string().
 -type filename() :: string().
 
+-include("mad.hrl").
 
 %% compile dependencies
 -spec deps(directory(), any(), filename(), [mad_deps:dependency()]) -> ok.
@@ -51,15 +52,14 @@ deps(Cwd, Conf, ConfigFile, [H|T]) ->
 -spec dep(directory(), any(), filename(), string()) -> ok.
 dep(Cwd, Conf, ConfigFile, Name) ->
     %% check dependencies of the dependency
-    DepPath = filename:join([Cwd, mad_utils:get_value(deps_dir, Conf, "deps"),
-                             Name]),
+    DepPath = filename:join([Cwd, ?deps_dir(Conf), Name]),
     DepConfigFile = filename:join(DepPath, ConfigFile),
 
     %% read rebar config file and evaluate rebar script file
     DepConf = mad_utils:consult(DepConfigFile),
     DepConf1 = mad_utils:script(DepConfigFile, DepConf),
 
-    deps(Cwd, Conf, ConfigFile, mad_utils:get_value(deps, DepConf1, [])),
+    deps(Cwd, Conf, ConfigFile, ?deps(DepConf1)),
 
     %% add lib_dirs to path
     LibDirs = mad_utils:lib_dirs(DepPath, DepConf1),
@@ -204,11 +204,11 @@ is_compiled(Target, File) ->
 
 -spec add_modules_property([{atom(), term()}]) -> [{atom(), term()}].
 add_modules_property(Properties) ->
-    case lists:keyfind(modules, 1, Properties) of
-        {modules, _} ->
-            Properties;
+    case mad_utils:get_value(modules, Properties, undefined) of
+        undefined ->
+            Properties ++ [{modules, []}];
         _ ->
-            Properties ++ [{modules, []}]
+            Properties
     end.
 
 -spec split_files([filename()]) -> {[filename()], [filename()], [filename()]}.
