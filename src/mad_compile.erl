@@ -139,8 +139,9 @@ compile_fun(Inc, Bin, Opt) ->
     end.
 
 filetype(File) ->
-    L = length(hd(string:tokens(File, "."))),
-    string:substr(File, L + 1, length(File)).
+    Name = filename:basename(File),
+    L = length(hd(string:tokens(Name, "."))),
+    string:substr(Name, L + 1, length(Name)).
 
 compile(File, Inc, Bin, Opts, ".xrl") ->
     compile_xyrl(File, Inc, Bin, Opts, ".erl", leex);

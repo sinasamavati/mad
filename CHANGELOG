@@ -1,5 +1,7 @@
 2014-02-25  Sina Samavati  <sina.samv@gmail.com>
 
+	* src/mad_compile.erl: fix filetype/1 to return the right file extension even if '.' used in directories
+
 	* src/mad_deps.erl (fetch_dep/7): use the same config for building dependencies
 
 2014-02-24  Sina Samavati  <sina.samv@gmail.com>

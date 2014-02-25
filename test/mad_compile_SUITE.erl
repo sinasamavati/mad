@@ -64,7 +64,9 @@ filetype(_) ->
     ".app.src" = mad_compile:filetype("/path/to/___file_.app.src"),
     ".yrl" = mad_compile:filetype("file_.yrl"),
     ".yrl" = mad_compile:filetype("/path/to/file.yrl"),
-    ".yrl" = mad_compile:filetype("/path/to/__file_.yrl").
+    ".yrl" = mad_compile:filetype("/path/to/__file_.yrl"),
+    ".erl" = mad_compile:filetype("/path../t.o./file.erl"),
+    ".whatever" = mad_compile:filetype("~/.emacs.d/vendor/file.whatever").
 
 deps(Config) ->
     DataDir = get_value(data_dir, Config),
