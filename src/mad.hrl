@@ -1,0 +1,2 @@
+-define(deps_dir(Conf), mad_utils:get_value(deps_dir, Conf, "deps")).
+-define(deps(Conf), mad_utils:get_value(deps, Conf, [])).
