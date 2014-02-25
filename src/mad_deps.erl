@@ -40,6 +40,7 @@
 -type dependency() :: {name(), string(), repo()}.
 -export_type([dependency/0]).
 
+-include("mad.hrl").
 
 -spec repos_path() -> directory().
 repos_path() ->
@@ -90,14 +91,14 @@ fetch_dep(Cwd, Config, ConfigFile, Publisher, Name, Cmd, Uri) ->
     TrunkConfigFile = filename:join(TrunkPath, ConfigFile),
     DepConf = mad_utils:consult(TrunkConfigFile),
     DepConf1 = mad_utils:script(TrunkConfigFile, DepConf),
-    fetch(Cwd, Config, ConfigFile, mad_utils:get_value(deps, DepConf1, [])).
+    fetch(Cwd, Config, ConfigFile, ?deps(DepConf1)).
 
 %% build dependency based on branch/tag/commit
 -spec build_dep(directory(), any(), string(), string(), string(), string(),
                 string()) -> ok.
 build_dep(Cwd, Conf, _ConfigFile, Publisher, Name, Cmd, Co) ->
     TrunkPath = path(Publisher, Name),
-    DepsDir = filename:join(Cwd, mad_utils:get_value(deps_dir, Conf, "deps")),
+    DepsDir = filename:join(Cwd, ?deps_dir(Conf)),
     %% get a copy of dependency from trunk
     mad_utils:exec("cp", ["-r", TrunkPath, DepsDir]),
     DepPath = filename:join(DepsDir, Name),
