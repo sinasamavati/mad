@@ -66,41 +66,22 @@ dep(Cwd, Conf, ConfigFile, Name) ->
     code:add_paths(LibDirs),
 
     %% compile sub_dirs and add them to path
-    SubDirs = mad_utils:sub_dirs(DepPath, ConfigFile, Conf),
+    SubDirs = mad_utils:sub_dirs(DepPath, DepConfigFile, DepConf1),
     foreach(fun app/3, SubDirs, Conf, ConfigFile),
 
-    SrcDir = mad_utils:src(DepPath),
-    Files = sort_files(files(SrcDir)),
-
-    case Files of
-        [] -> ok;
-        Files ->
-            IncDir = mad_utils:include(DepPath),
-            EbinDir = mad_utils:ebin(DepPath),
-
-            %% create EbinDir and add it to code path
-            file:make_dir(EbinDir),
-            code:add_path(EbinDir),
-
-            Opts = mad_utils:get_value(erl_opts, DepConf1, []),
-            lists:foreach(compile_fun(IncDir, EbinDir, Opts), Files),
-
-            %% compile erlydtl templates
-            dtl(DepPath, DepConf1),
-
-            put(Name, compiled),
-            ok
-    end.
+    app(DepPath, DepConf1, DepConfigFile),
+    put(Name, compiled),
+    ok.
 
 -spec app(directory(), any(), filename()) -> ok.
 app(Dir, Conf, ConfigFile) ->
     ConfigFile1 = filename:join(Dir, ConfigFile),
     Conf1 = mad_utils:script(ConfigFile1, Conf),
     SrcDir = mad_utils:src(Dir),
-    Files = sort_files(files(SrcDir)),
 
-    case Files of
-        [] -> ok;
+    case sort_files(files(SrcDir)) of
+        [] ->
+            ok;
         Files ->
             IncDir = mad_utils:include(Dir),
             EbinDir = mad_utils:ebin(Dir),
@@ -110,10 +91,9 @@ app(Dir, Conf, ConfigFile) ->
             code:add_path(EbinDir),
 
             Opts = mad_utils:get_value(erl_opts, Conf1, []),
-            lists:foreach(compile_fun(IncDir, EbinDir, Opts), Files),
-            ok
+            lists:foreach(compile_fun(IncDir, EbinDir, Opts), Files)
     end,
-    dtl(Dir,Conf1),
+    dtl(Dir, Conf),
     ok.
 
 %% ask for erlydtl_opts and compile erlydtl templates
