@@ -28,6 +28,7 @@
 -export(['compile-app'/3]).
 -export(['compile-deps'/3]).
 
+-include("mad.hrl").
 
 main([]) ->
     help();
@@ -43,13 +44,13 @@ main(Args) ->
     maybe_version_info(Opts),
 
     Cwd = mad_utils:cwd(),
-    ConfigFile = get_value(config_file, Opts, "rebar.config"),
+    ConfigFile = mad_utils:get_value(config_file, Opts, "rebar.config"),
     ConfigFileAbs = filename:join(Cwd, ConfigFile),
     Conf = mad_utils:consult(ConfigFileAbs),
     Conf1 = mad_utils:script(ConfigFileAbs, Conf),
 
-    EbinDirs = filename:join([get_value(deps_dir, Conf1, ["deps"]),
-                              "*", "ebin"]),
+    %% -pa ebin deps/*/ebin
+    EbinDirs = filename:join([?deps_dir(Conf), "*", "ebin"]),
     Paths = ["ebin"|filelib:wildcard(EbinDirs)],
     code:add_paths(Paths),
 
@@ -62,13 +63,12 @@ main(Args) ->
 
 %% fetch dependencies
 'fetch-deps'(Cwd, ConfigFile, Conf) ->
-    case get_value(deps, Conf, []) of
+    case ?deps(Conf) of
         [] ->
             ok;
         Deps ->
             file:make_dir(mad_deps:repos_path()),
-            DepsDir = get_value(deps_dir, Conf, "deps"),
-            file:make_dir(DepsDir),
+            file:make_dir(?deps_dir(Conf)),
             mad_deps:fetch(Cwd, Conf, ConfigFile, Deps)
     end.
 
@@ -83,19 +83,12 @@ compile(Cwd, ConfigFile, Conf) ->
 %% compile a project according to the conventions
 'compile-app'(Cwd, ConfigFile, Conf) ->
     %% check sub_dirs if they have something to be compiled
-    SubDirs = [mad_utils:sub_dirs(Cwd, ConfigFile, Conf)],
+    SubDirs = mad_utils:sub_dirs(Cwd, ConfigFile, Conf),
     Dirs = SubDirs ++ [Cwd],
     mad_compile:foreach(fun mad_compile:app/3, Dirs, Conf, ConfigFile).
 
 'compile-deps'(Cwd, ConfigFile, Conf) ->
-    mad_compile:deps(Cwd, Conf, ConfigFile, get_value(deps, Conf, [])).
-
-get_value(Key, Opts, Default) ->
-    case lists:keyfind(Key, 1, Opts) of
-        {Key, Value} ->
-            Value;
-        _ -> Default
-    end.
+    mad_compile:deps(Cwd, Conf, ConfigFile, ?deps(Conf)).
 
 option_spec_list_() ->
     [
