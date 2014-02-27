@@ -253,13 +253,8 @@ uses_parse_transform(File) ->
 
 -spec is_behaviour(file:name()) -> boolean().
 is_behaviour(File) ->
-    case filelib:is_file(File) of
-        true ->
-            [] =/= mad_utils:exec("sed", ["-n", "-e", "'/-callback/p'", "-e",
-                                          "'/behaviour_info\\/1/p'", File]);
-        _ ->
-            false
-    end.
+    [] =/= mad_utils:exec("grep", ["-sE", "\"\\-callback|behaviour_info\\/1\"",
+                                   File]).
 
 get_kv(K, Opts, Default) ->
     V = mad_utils:get_value(K, Opts, Default),

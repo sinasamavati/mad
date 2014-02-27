@@ -1,5 +1,7 @@
 2014-02-28  Sina Samavati  <sina.samv@gmail.com>
 
+	* src/mad_compile.erl: use grep instead of sed in is_behaviour/1
+
 	* src/mad_compile.erl: add uses_parse_transform/1 to check if a modules needs parse_transform
 	rename H|T to File|Rest in sort_files_by_priority/4
 
