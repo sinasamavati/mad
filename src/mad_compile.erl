@@ -221,22 +221,22 @@ sort_files(Files) ->
                              [filename()]) -> [filename()].
 sort_files_by_priority([], High, Medium, Low) ->
     (High ++ Medium) ++ Low;
-sort_files_by_priority([H|T], High, Medium, Low) ->
+sort_files_by_priority([File|Rest], High, Medium, Low) ->
     {High1, Medium1, Low1} =
-        case is_behaviour(H) of
+        case is_behaviour(File) of
             true ->
-                {[H|High], Medium, Low};
+                {[File|High], Medium, Low};
             false ->
-                {High, [H|Medium], Low}
+                {High, [File|Medium], Low}
         end,
     {High2, Medium2, Low2} =
-        case mad_utils:exec("sed", ["-n", "'/-compile/p'", H]) of
-            [] ->
+        case uses_parse_transform(File) of
+            false ->
                 {High1, Medium1, Low1};
-            _ ->
-                {High1 -- [H], Medium1 -- [H], [H|Low1]}
+            true ->
+                {High1 -- [File], Medium1 -- [File], [File|Low1]}
         end,
-    sort_files_by_priority(T, High2, Medium2, Low2).
+    sort_files_by_priority(Rest, High2, Medium2, Low2).
 
 -spec foreach(fun((directory(), filename()) -> ok), [filename()], any(),
               filename()) -> ok.
@@ -245,6 +245,11 @@ foreach(_, [], _, _) ->
 foreach(Fun, [Dir|T], Config, ConfigFile) ->
     Fun(Dir, Config, ConfigFile),
     foreach(Fun, T, Config, ConfigFile).
+
+-spec uses_parse_transform(file:name()) -> boolean().
+uses_parse_transform(File) ->
+    [] =/= mad_utils:exec("grep", ["-sE", "\"\\{[ \\r\\n\\t]*parse_transform\"",
+                                   File]).
 
 -spec is_behaviour(file:name()) -> boolean().
 is_behaviour(File) ->
